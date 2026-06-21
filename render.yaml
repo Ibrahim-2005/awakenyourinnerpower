@@ -11,9 +11,9 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_PATH
-        value: /var/data/awaken.db
+        value: awaken.db
       - key: LOG_DIR
-        value: /var/data/logs
+        value: logs
       - key: TRUST_PROXY
         value: "1"
     disk:
