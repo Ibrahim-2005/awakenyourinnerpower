@@ -403,16 +403,6 @@ input,select,textarea,button{max-width:100%}
     cursor:pointer;
 }
 
-.admin-sidebar{
-    transform:translateX(-100%);
-    transition:.3s;
-    position:fixed;
-    z-index:9998;
-}
-
-.admin-sidebar.open{
-    transform:translateX(0);
-}
 }
 
 @media(prefers-reduced-motion:reduce){
