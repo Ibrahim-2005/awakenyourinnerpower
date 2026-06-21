@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Payment · Awaken Your Inner Power{% endblock %}
+{% block body %}
+<main class="payment-page">
+  <section class="payment-panel">
+    <div class="success-mark">✓</div>
+    <p class="eyebrow violet"><i></i> Request received</p>
+    <h1>One final step to reserve your session.</h1>
+    <div class="booking-summary">
+      <div><small>Name</small><strong>{{ booking.name }}</strong></div>
+      <div><small>Date</small><strong>{{ booking.session_date }}</strong></div>
+      <div><small>Time</small><strong>{{ booking.slot }}</strong></div>
+      <div><small>Package</small><strong>{{ booking.package }}</strong></div>
+    </div>
+    <div class="payment-details">
+      <h2>Payment details</h2>
+      <p><small>UPI ID</small><strong>{{ config.UPI_ID }}</strong></p>
+      <p><small>Payee name</small><strong>{{ config.PAYMENT_NAME }}</strong></p>
+      {% if config.BANK_NAME %}<p><small>Bank</small><strong>{{ config.BANK_NAME }}</strong></p>{% endif %}
+      {% if config.BANK_ACCOUNT %}<p><small>Account</small><strong>{{ config.BANK_ACCOUNT }}</strong></p>{% endif %}
+      {% if config.BANK_IFSC %}<p><small>IFSC</small><strong>{{ config.BANK_IFSC }}</strong></p>{% endif %}
+    </div>
+    <a class="button gold whatsapp-button" href="https://wa.me/{{ whatsapp_number }}?text={{ ('Hello, I have paid for booking #' ~ booking.id ~ ' on ' ~ booking.session_date ~ ' at ' ~ booking.slot ~ '. I am sending the payment screenshot now.')|urlencode }}" target="_blank" rel="noopener">Send screenshot on WhatsApp →</a>
+    <p class="policy">Full payment confirms your appointment. Sessions can be rescheduled with prior notice. No refunds apply to completed sessions.</p>
+  </section>
+</main>
+{% endblock %}

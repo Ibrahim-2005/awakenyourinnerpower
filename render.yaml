@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: awaken-your-inner-power
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: waitress-serve --listen=*:10000 --call app:create_app
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/awaken.db
+      - key: LOG_DIR
+        value: /var/data/logs
+      - key: TRUST_PROXY
+        value: "1"
+    disk:
+      name: awaken-data
+      mountPath: /var/data
+      sizeGB: 1

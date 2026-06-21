@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}Bookings{% endblock %}
+{% block admin_content %}
+<header class="admin-header"><div><p class="eyebrow violet"><i></i> Clients</p><h1>All bookings</h1></div></header>
+<form class="filters" method="get"><input name="q" value="{{ query }}" placeholder="Search name, phone, email"><select name="status"><option value="">All statuses</option>{% for status in statuses %}<option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status|title }}</option>{% endfor %}</select><input type="date" name="date" value="{{ selected_date }}"><button class="button dark-button">Filter</button><a href="{{ url_for('admin_bookings') }}">Clear</a></form>
+<section class="admin-card table-card"><div class="table-wrap"><table><thead><tr><th>Client</th><th>Session</th><th>Package</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>
+{% for booking in bookings %}<tr><td><b>{{ booking.name }}</b><small>{{ booking.phone }}{% if booking.email %}<br>{{ booking.email }}{% endif %}</small></td><td>{{ booking.session_date }}<small>{{ booking.slot }}</small></td><td>{{ booking.package }}</td><td><em class="status {{ booking.status }}">{{ booking.status }}</em></td><td>{{ booking.payment_status|title }}</td><td>
+<div class="booking-actions">
+
+<form class="inline-update" action="{{ url_for('update_booking_status', booking_id=booking.id) }}" method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+<select name="status">
+{% for status in statuses %}
+<option value="{{ status }}" {% if booking.status == status %}selected{% endif %}>
+{{ status|title }}
+</option>
+{% endfor %}
+</select>
+
+<select name="payment_status">
+<option value="unpaid" {% if booking.payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+<option value="paid" {% if booking.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+</select>
+
+<button>Save</button>
+
+</form>
+
+<a
+class="wa-button"
+href="https://wa.me/{{ booking.phone|replace('+','') }}"
+target="_blank">
+WhatsApp
+</a>
+
+</div>
+</td></tr>
+{% else %}<tr><td colspan="6" class="empty-state">No bookings match these filters.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}
+

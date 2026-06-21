@@ -1,0 +1,114 @@
+{% extends "admin/base.html" %}
+{% block title %}Booking calendar{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>{% endblock %}
+{% block admin_content %}
+<header class="admin-header"><div><p class="eyebrow violet"><i></i> Schedule</p><h1>Booking calendar</h1></div></header>
+<div class="stat-grid calendar-stats">
+    <article>
+        <small>Pending</small>
+        <strong>{{ pending }}</strong>
+    </article>
+
+    <article>
+        <small>Confirmed</small>
+        <strong>{{ confirmed }}</strong>
+    </article>
+
+    <article>
+        <small>Completed</small>
+        <strong>{{ completed }}</strong>
+    </article>
+
+    <article>
+        <small>Blocked</small>
+        <strong>{{ blocked }}</strong>
+    </article>
+</div>
+<div class="calendar-layout">
+  <section class="admin-card calendar-card"><div id="calendar"></div></section>
+  <aside class="admin-card block-card"><h2>Block a slot</h2><p>Keep a time unavailable for a personal commitment or special arrangement.</p>
+    <form action="{{ url_for('add_block') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Date<input name="session_date" type="date" required></label><label>Time<select name="slot" required>{% for slot in slots %}<option>{{ slot }}</option>{% endfor %}</select></label><label>Note<input name="note" placeholder="Optional"></label><button class="button dark-button" type="submit">Block this time</button></form>
+    <div class="legend"><span><i class="pending"></i> Pending</span><span><i class="confirmed"></i> Confirmed</span><span><i class="completed"></i> Completed</span><span><i class="blocked"></i> Blocked</span></div>
+  </aside>
+</div>
+<dialog id="event-dialog"><button class="dialog-close" type="button">×</button><div id="event-content"></div></dialog>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const dialog = document.getElementById('event-dialog');
+  const content = document.getElementById('event-content');
+  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView: 'dayGridMonth', height: 'auto',headerToolbar: {
+    left: 'customPrev,customNext',
+    center: 'title',
+    right: 'today'
+},
+
+customButtons: {
+    customPrev: {
+        text: '←',
+        click() {
+            calendar.prev();
+        }
+    },
+    customNext: {
+        text: '→',
+        click() {
+            calendar.next();
+        }
+    }
+}, buttonText: { today: 'Today'},events: '{{ url_for("admin_events") }}',
+    eventClick(info) {
+      const p = info.event.extendedProps;
+      if (p.kind === 'booking') {
+        content.innerHTML = `
+<p class="eyebrow violet"><i></i> Booking #${p.bookingId}</p>
+
+<h2>${info.event.title}</h2>
+
+<div class="booking-details">
+    <p><strong>Phone:</strong> ${p.phone}</p>
+    <p><strong>Package:</strong> ${p.package}</p>
+    <p><strong>Time Slot:</strong> ${p.slot}</p>
+    <p><strong>Status:</strong> ${p.status}</p>
+</div>
+
+<form method="post" action="/admin/bookings/${p.bookingId}/status">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <label>
+        Status
+        <select name="status">
+            {% for status in ['pending','confirmed','completed','cancelled'] %}
+            <option value="{{ status }}">{{ status|title }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>
+        Payment
+        <select name="payment_status">
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+        </select>
+    </label>
+
+    <button class="button dark-button">
+        Save Changes
+    </button>
+</form>
+`;
+        content.querySelector('[name=status]').value = p.status;
+      } else {
+        content.innerHTML = `<p class="eyebrow violet"><i></i> Blocked slot</p><h2>${info.event.title}</h2><form method="post" action="/admin/blocks/${p.blockId}/delete"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button dark-button">Reopen this slot</button></form>`;
+      }
+      dialog.showModal();
+    }
+  });
+  calendar.render();
+  document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
+});
+</script>
+{% endblock %}
+

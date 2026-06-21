@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin overview{% endblock %}
+{% block admin_content %}
+<header class="admin-header"><div><p class="eyebrow violet"><i></i> Overview</p><h1>Good to see you.</h1></div><a class="button dark-button" href="{{ url_for('admin_calendar') }}">Open calendar</a></header>
+<div class="stat-grid"><article><small>Pending requests</small><strong>{{ pending_count }}</strong><a href="{{ url_for('admin_bookings', status='pending') }}">Review now →</a></article><article><small>Today's sessions</small><strong>{{ todays|length }}</strong><span>{{ todays[0].slot if todays else 'Your day is open' }}</span></article><article><small>Next 7 days</small><strong>{{ upcoming|length }}</strong><span>Active bookings</span></article></div>
+<section class="admin-card"><div class="card-heading"><h2>Coming up this week</h2><a href="{{ url_for('admin_bookings') }}">View all</a></div>
+  {% if upcoming %}<div class="admin-list">{% for booking in upcoming %}<div><time>{{ booking.session_date }}</time><span><b>{{ booking.name }}</b><small>{{ booking.slot }} · {{ booking.package }}</small></span><em class="status {{ booking.status }}">{{ booking.status }}</em></div>{% endfor %}</div>{% else %}<p class="empty-state">No sessions booked for the next seven days.</p>{% endif %}
+</section>
+{% endblock %}
+

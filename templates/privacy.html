@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Privacy & Booking Policy · Awaken Your Inner Power{% endblock %}
+{% block body %}
+<main class="policy-page">
+  <article class="policy-panel">
+    <p class="eyebrow violet"><i></i> Privacy & booking policy</p>
+    <h1>Your information is handled with care.</h1>
+    <h2>Information collected</h2>
+    <p>When you request a session, we collect your name, phone number, optional email address, chosen appointment details, and any note you provide.</p>
+    <h2>How it is used</h2>
+    <p>Your information is used only to arrange, confirm, manage, and follow up on your coaching session. It is not sold or used for unrelated marketing.</p>
+    <h2>Storage and confidentiality</h2>
+    <p>Booking information is stored in the website’s protected booking database and is visible only to the administrator. Coaching conversations are treated as confidential, subject to applicable law and immediate safety concerns.</p>
+    <h2>Payment and booking</h2>
+    <p>Payment is handled through the listed external payment methods. Do not submit card or banking passwords through this website. A pending unpaid slot may be released automatically after the stated holding period. Sessions can be rescheduled with prior notice; completed sessions are non-refundable.</p>
+    <h2>Your choices</h2>
+    <p>You may contact us to request correction or deletion of your booking information, subject to records that must be retained for legal or accounting purposes.</p>
+    <h2>Important disclaimer</h2>
+    <p>Life coaching supports personal growth and is not a substitute for medical, psychological, legal, or financial advice. If you are in immediate danger or crisis, contact local emergency services or a qualified professional.</p>
+    <a class="button dark-button" href="{{ url_for('index', _anchor='book') }}">Return to booking</a>
+  </article>
+</main>
+{% endblock %}

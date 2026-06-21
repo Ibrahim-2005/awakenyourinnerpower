@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Admin sign in{% endblock %}
+{% block body %}
+<main class="login-page">
+  <form class="login-card" method="post">
+    <img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt="Awaken Your Inner Power">
+    <p class="eyebrow violet"><i></i> Private admin</p><h1>Welcome back.</h1><p>Sign in to manage sessions and availability.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Username<input name="username" required autofocus autocomplete="username"></label>
+    <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="button gold" type="submit">Sign in</button>
+    <a href="{{ url_for('index') }}">← Return to website</a>
+  </form>
+</main>
+{% endblock %}

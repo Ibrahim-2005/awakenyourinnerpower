@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block body %}
+<div id="page-top" class="page-top-anchor" aria-hidden="true"></div>
+<header class="site-header">
+  <a class="brand" href="#home" aria-label="Awaken Your Inner Power home">
+    <span class="brand-mark"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""></span>
+    <span>Awaken Your Inner Power</span>
+  </a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="site-nav" aria-label="Main navigation">
+    <div class="mobile-nav-heading">
+      <img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt="">
+      <small>Awaken Your Inner Power</small>
+      <strong>Find what you need.</strong>
+    </div>
+    <a href="#about">About</a><a href="#services">Services</a><a href="#journey">Your Session</a>
+    <a href="#packages">Packages</a><a href="#faq">FAQ</a><a class="nav-cta" href="#book">Book a session</a>
+  </nav>
+  <button class="nav-backdrop" type="button" aria-label="Close menu" tabindex="-1"></button>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+{% endwith %}
+
+<main>
+  <section class="hero dark" id="home">
+    <div class="aurora aurora-one"></div><div class="aurora aurora-two"></div>
+    <div class="hero-copy reveal">
+      <p class="eyebrow"><i></i> Life coaching · healing · meditation</p>
+      <h1>Awaken Your <em>Inner Power</em></h1>
+      <p class="hero-lead">Transform your mind <span>•</span> Transform your life</p>
+      <p class="hero-sub">A calm, supportive space to reconnect with your strength, find clarity, and move forward with confidence.</p>
+      <div class="hero-actions"><a class="button gold" href="#book">Book your session</a><a class="text-link" href="#about">Explore the journey <span>↓</span></a></div>
+    </div>
+    <div class="hero-mark reveal" aria-hidden="true">
+      <div class="lotus-halo"></div>
+      <img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt="">
+      <p>You already have the power within you.</p>
+    </div>
+    <div class="scroll-note">Breathe · Begin · Become</div>
+  </section>
+
+  <section class="welcome light section" id="about">
+    <div class="section-intro reveal">
+      <p class="eyebrow violet"><i></i> Welcome</p>
+      <h2>A gentler way forward begins within.</h2>
+    </div>
+    <div class="welcome-grid">
+      <div class="prose reveal">
+        <p class="lead">Every person has the power to create a happier, healthier, and more fulfilling life.</p>
+        <p>Stress, fear, self-doubt, relationship challenges, health concerns, or financial struggles can leave us feeling stuck. Through life coaching, mindset transformation, meditation, and spiritual guidance, I help people reconnect with their inner strength.</p>
+        <blockquote>“My role is not to give you power. It is to help you remember the power that has always been yours.”</blockquote>
+      </div>
+      <div class="about-card reveal">
+        <div class="mini-lotus" aria-hidden="true"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""></div>
+        <p class="eyebrow"><i></i> About your guide</p>
+        <h3>Practical guidance, soulful transformation.</h3>
+        <p>I am a Life Coach and Spiritual Guide. My approach brings together self-awareness, positive thinking, subconscious mind transformation, meditation, emotional healing, and personal empowerment.</p>
+        <a class="text-link gold-text" href="#services">Discover how I can support you →</a>
+      </div>
+    </div>
+    <div class="support-strip reveal" aria-label="Areas of support">
+      {% set support_items = ["Confidence", "Stress", "Relationships", "Career & business", "Health mindset", "Spiritual growth", "Goals"] %}
+      <div class="support-track">
+        {% for repeat in range(2) %}
+        <div class="support-group" {% if repeat == 1 %}aria-hidden="true"{% endif %}>
+          {% for item in support_items %}
+          <span>{{ item }}</span>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="services section" id="services">
+    <div class="section-intro centered reveal">
+      <p class="eyebrow violet"><i></i> Ways to grow</p>
+      <h2>Support designed around your life.</h2>
+      <p>Each session meets you where you are—without judgment, pressure, or a one-size-fits-all formula.</p>
+    </div>
+    <div class="service-grid">
+      {% set service_items = [
+        ("01","One-to-One Coaching","Personalized guidance to overcome challenges, gain clarity, and create meaningful change."),
+        ("02","Mindset Transformation","Identify limiting beliefs and build empowering thought patterns that support success and happiness."),
+        ("03","Meditation & Relaxation","Simple, accessible practices to calm the mind, reduce stress, and restore emotional balance."),
+        ("04","Manifestation & Goal Alignment","Align your thoughts, emotions, and actions with the life you genuinely wish to create."),
+        ("05","Spiritual Growth & Self-Discovery","Explore your inner wisdom and deepen your connection with your authentic self.")
+      ] %}
+      {% for number, title, text in service_items %}
+      <article class="service-card reveal"><span>{{ number }}</span><h3>{{ title }}</h3><p>{{ text }}</p><i></i></article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="why dark section">
+    <div class="why-copy reveal">
+      <p class="eyebrow"><i></i> Why choose me</p>
+      <h2>Transformation feels possible when you feel truly seen.</h2>
+      <p>This is a safe and supportive space where practical tools meet compassionate, holistic guidance.</p>
+      <a class="button outline" href="#book">Take the first step</a>
+    </div>
+    <div class="benefits reveal">
+      {% for item in ["Guidance shaped around your story", "Mindset tools you can use every day", "Meditation and relaxation techniques", "Positive accountability and encouragement", "Mind, emotion, and spirit in harmony", "Confidential, respectful conversations"] %}
+      <div><b>✦</b><span>{{ item }}</span></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="journey light section" id="journey">
+    <div class="section-intro reveal">
+      <p class="eyebrow violet"><i></i> Your 60-minute session</p>
+      <h2>From arriving to moving forward.</h2>
+    </div>
+    <div class="timeline">
+      {% set steps = [
+        ("0–5","Arrive","Welcome, relaxation, and intention setting"),
+        ("5–15","Understand","Explore current challenges and goals"),
+        ("15–30","Transform","Coaching and mindset transformation"),
+        ("30–40","Reconnect","Guided meditation, visualization, or relaxation"),
+        ("40–50","Integrate","Action plan, affirmations, and practical steps"),
+        ("50–57","Clarify","Questions and helpful clarifications"),
+        ("57–60","Close","Closing prayer and positive blessings")
+      ] %}
+      {% for mins, title, text in steps %}
+      <article class="timeline-step reveal"><div class="time">{{ mins }}<small>min</small></div><div><h3>{{ title }}</h3><p>{{ text }}</p></div></article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="packages dark section" id="packages">
+    <div class="section-intro centered reveal">
+      <p class="eyebrow"><i></i> Coaching packages</p>
+      <h2>Choose the support that fits your season.</h2>
+    </div>
+    <div class="package-grid">
+      <article class="package-card reveal"><p class="card-label">Clarity</p><h3>Single Session</h3><strong>60 <small>minutes</small></strong><p>Perfect for gaining clarity, compassionate guidance, and practical next steps.</p><ul><li>Personalized coaching</li><li>Guided relaxation</li><li>Action plan & affirmations</li></ul><a class="button outline" href="#book">Book one session</a></article>
+      <article class="package-card featured reveal"><p class="card-label">Deep transformation</p><h3>10-Session Program</h3><strong>10 <small>guided sessions</small></strong><p>For those committed to lasting positive change through ongoing support and practice.</p><ul><li>Deeper mindset shifts</li><li>Progressive practices</li><li>Accountability & support</li></ul><a class="button gold" href="#book">Begin your journey</a></article>
+    </div>
+    <p class="package-note reveal">Real transformation happens through awareness, practice, and consistency.</p>
+  </section>
+
+  <section class="booking section" id="book">
+    <div class="booking-copy reveal">
+      <p class="eyebrow violet"><i></i> Book a session</p>
+      <h2>Your next chapter can begin with one conversation.</h2>
+      <p>Choose a convenient date and time. Your slot will be held while payment is confirmed.</p>
+      <div class="contact-pill"><span>WhatsApp or call</span><a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">{{ phone_number }}</a></div>
+      <div class="after-hours"><b>After 7:00 PM?</b><p>Special appointments are available by arrangement for ₹999. Please contact us directly.</p></div>
+    </div>
+    <form class="booking-form reveal" action="{{ url_for('book') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="honeypot" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="field wide"><label for="name">Your name *</label><input id="name" name="name" required autocomplete="name" placeholder="How should I address you?"></div>
+      <div class="field"><label for="phone">Phone / WhatsApp *</label><input id="phone" name="phone" required autocomplete="tel" placeholder="+91"></div>
+      <div class="field"><label for="email">Email <small>optional</small></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field wide"><label for="package">Choose your package *</label><select id="package" name="package" required><option value="">Select one</option>{% for package in packages %}<option>{{ package }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="session_date">Preferred date *</label><input id="session_date" name="session_date" type="date" min="{{ min_date }}" required></div>
+      <div class="field"><label for="slot">Available time *</label><select id="slot" name="slot" required disabled><option value="">Choose a date first</option></select></div>
+      <div class="field wide"><label for="note">What would you like support with? <small>optional</small></label><textarea id="note" name="note" rows="3" placeholder="A few words are enough..."></textarea></div>
+      <label class="consent-field wide">
+        <input type="checkbox" name="privacy_consent" value="yes" required>
+        <span>I agree to the <a href="{{ url_for('privacy') }}" target="_blank">privacy and booking policy</a>.</span>
+      </label>
+      <button class="button gold wide-button" type="submit">Request this session <span>→</span></button>
+      <p class="form-note">Your information is treated with care and confidentiality.</p>
+    </form>
+  </section>
+
+  <section class="payment-preview section">
+    <div class="section-intro reveal"><p class="eyebrow violet"><i></i> Simple payment</p><h2>Reserve your chosen time.</h2><p>After requesting your session, you’ll see secure payment instructions and can send your screenshot on WhatsApp.</p></div>
+    <div class="payment-methods reveal"><span>UPI</span><span>GPay</span><span>PhonePe</span><span>Paytm</span><span>Bank transfer</span></div>
+  </section>
+
+  <section class="faq light section" id="faq">
+    <div class="section-intro centered reveal"><p class="eyebrow violet"><i></i> Common questions</p><h2>A little clarity before we begin.</h2></div>
+    <div class="faq-list">
+      {% set faqs = [
+        ("What is life coaching?","Life coaching is a supportive process that helps you gain clarity, overcome challenges, build confidence, and move toward your goals."),
+        ("Who can benefit from coaching?","Anyone seeking positive change in relationships, confidence, stress, career, business, health, emotional well-being, personal growth, or spirituality."),
+        ("How long is a session?","Each coaching session lasts approximately 60 minutes."),
+        ("Are sessions online?","Yes. Online sessions are available worldwide."),
+        ("What happens during a session?","Sessions may include discussion, mindset coaching, limiting-belief work, meditation, relaxation techniques, and practical guidance."),
+        ("Do I need meditation or spiritual experience?","No. Every practice is beginner-friendly and explained with care."),
+        ("How many sessions do you recommend?","A single session is ideal for clarity. For deeper shifts, confidence building, emotional healing, habit change, and sustained growth, the 10-session program is recommended."),
+        ("Will my information remain confidential?","Yes. Personal information shared during coaching sessions is treated with respect and confidentiality."),
+        ("Do you guarantee results?","Every journey is unique. Results depend on your circumstances, commitment, and actions, so specific outcomes cannot be guaranteed.")
+      ] %}
+      {% for question, answer in faqs %}
+      <details class="reveal">
+        <summary><span class="faq-number">{{ "%02d"|format(loop.index) }}</span><b>{{ question }}</b><span class="faq-plus"></span></summary>
+        <div class="faq-answer"><div><p>{{ answer }}</p></div></div>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="contact dark section" id="contact">
+    <div class="contact-heading reveal"><p class="eyebrow"><i></i> Connect</p><h2>Let’s begin where you are.</h2><p>Online sessions available worldwide.</p></div>
+    <div class="contact-links reveal">
+      <a href="tel:{{ phone_number|replace(' ','') }}"><small>Phone</small>{{ phone_number }}</a>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"><small>WhatsApp</small>{{ phone_number }}</a>
+      <a href="mailto:{{ contact_email }}"><small>Email</small>{{ contact_email }}</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-brand"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""><span>Awaken Your Inner Power</span></div>
+  <blockquote>“The power you seek is already within you. Awaken it, trust it, and allow it to guide your life.”</blockquote>
+  <p class="disclaimer">Life coaching supports personal growth and is not a substitute for professional medical, psychological, legal, or financial advice. Results vary by individual circumstances, commitment, and actions.</p>
+  <div class="footer-bottom"><span>© {{ current_year }} Awaken Your Inner Power</span><a href="{{ url_for('admin_login') }}">Admin</a><a class="back-to-top" href="#page-top">Back to top ↑</a></div>
+</footer>
+{% endblock %}
