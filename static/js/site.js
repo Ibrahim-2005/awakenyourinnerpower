@@ -93,3 +93,14 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     });
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const menuBtn = document.querySelector('.admin-menu-toggle');
+    const sidebar = document.querySelector('.admin-sidebar');
+
+    if(menuBtn && sidebar){
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
+});
