@@ -85,6 +85,31 @@ td small{
     text-transform:uppercase;
     letter-spacing:.08em;
 }
+.delete-button{
+    width:100%;
+    margin-top:.5rem;
+    padding:.8rem;
+    border:0;
+    border-radius:6px;
+    cursor:pointer;
+    background:#c0392b;
+    color:#fff;
+    font-weight:600;
+    font-size:.85rem;
+}
+
+.delete-button:hover{
+    background:#a93226;
+}
+.booking-actions{
+    display:flex;
+    flex-direction:column;
+    gap:.5rem;
+}
+
+.booking-actions form{
+    width:100%;
+}
 
 .wa-button{
     display:flex;
@@ -409,61 +434,100 @@ input,select,textarea,button{max-width:100%}
   from{transform:translateX(0)}
   to{transform:translateX(-50%)}
 }
-
 @media(max-width:600px){
-  .support-track{animation-duration:18s}
-  .support-group span{padding:.65rem 1rem;font-size:.68rem}
-  .support-group span:after{margin-left:2rem}
 
-  .admin-menu-toggle{
-      display:block;
-      background:none;
-      border:none;
-      color:#fff;
-      font-size:2rem;
-      cursor:pointer;
-      margin-left:auto;
+  .support-track{
+    animation-duration:18s;
   }
 
-  .admin-sidebar nav,
-  .admin-sidebar form{
-      display:none;
+  .support-group span{
+    padding:.65rem 1rem;
+    font-size:.68rem;
+  }
+
+  .support-group span:after{
+    margin-left:2rem;
   }
 
   .admin-sidebar{
-      display:flex;
-      flex-direction:row;
-      align-items:center;
-      justify-content:space-between;
-      padding:1rem;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    padding:1rem;
+    position:relative;
   }
 
   .admin-sidebar .brand{
-      margin:0;
+    margin:0;
   }
 
-  .admin-sidebar.open nav,
-  .admin-sidebar.open form{
-      display:flex;
-      flex-direction:column;
-      width:100%;
-      margin-top:1rem;
+  .admin-menu-toggle{
+    display:block;
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:2rem;
+    cursor:pointer;
+    margin-left:auto;
   }
 
+  /* Hidden by default */
+  .admin-sidebar nav,
+  .admin-sidebar form{
+    display:none;
+  }
+
+  /* Show when hamburger clicked */
   .admin-sidebar.open{
-      flex-direction:column;
-      align-items:flex-start;
+    display:block;
   }
-}
-.admin-sidebar.open nav{
+
+  .admin-sidebar.open nav{
     display:flex;
     flex-direction:column;
     width:100%;
-}
+    margin-top:1rem;
+  }
 
-.admin-sidebar.open form{
+  .admin-sidebar.open nav a{
+    padding:14px 0;
+    border-bottom:1px solid rgba(255,255,255,.1);
+  }
+
+  .admin-sidebar.open form{
     display:block;
     margin-top:1rem;
+  }
+  @media(max-width:600px){
+
+  .inline-update{
+      display:flex;
+      flex-direction:column;
+      gap:.5rem;
+      width:100%;
+  }
+
+  .inline-update select{
+      width:100%;
+      min-width:0;
+      font-size:.85rem;
+  }
+
+  .inline-update button{
+      width:100%;
+  }
+
+  .wa-button,
+  .delete-button{
+      width:100%;
+      text-align:center;
+  }
+
+  .booking-actions{
+      min-width:140px;
+  }
+}
 }
 
 @media(prefers-reduced-motion:reduce){

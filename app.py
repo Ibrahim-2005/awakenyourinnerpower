@@ -463,6 +463,23 @@ def create_app(test_config=None):
         db.commit()
         flash("Booking updated.", "success")
         return redirect(request.referrer or url_for("admin_bookings"))
+    
+    @app.post("/admin/bookings/<int:booking_id>/delete")
+    @login_required
+    @csrf_protect
+    def delete_booking(booking_id):
+        db = get_db()
+
+        db.execute(
+            "DELETE FROM bookings WHERE id = ?",
+            (booking_id,)
+        )
+
+        db.commit()
+
+        flash("Booking deleted successfully.", "success")
+
+        return redirect(url_for("admin_bookings"))
 
     @app.post("/admin/blocks")
     @login_required

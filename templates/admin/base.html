@@ -2,13 +2,33 @@
 {% block body %}
 <div class="admin-shell">
   <aside class="admin-sidebar">
+
+    <a class="brand" href="{{ url_for('admin_dashboard') }}">
+        <img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt="">
+        <span>
+            AWAKEN YOUR<br>
+            INNER POWER
+            <small>Admin Studio</small>
+        </span>
+    </a>
+
     <button class="admin-menu-toggle" type="button">
-    &#9776;
-</button>
-    <a class="brand" href="{{ url_for('admin_dashboard') }}"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""><span>AWAKEN YOUR<br>INNER POWER<small>Admin Studio</small></span></a>
-    <nav id="admin-nav"><a href="{{ url_for('admin_dashboard') }}">Overview</a><a href="{{ url_for('admin_calendar') }}">Calendar</a><a href="{{ url_for('admin_bookings') }}">Bookings</a><a href="{{ url_for('change_password') }}">Change password</a></nav>
-    <form action="{{ url_for('admin_logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Sign out</button></form>
-  </aside>
+        &#9776;
+    </button>
+
+    <nav id="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">Overview</a>
+        <a href="{{ url_for('admin_calendar') }}">Calendar</a>
+        <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+        <a href="{{ url_for('change_password') }}">Change password</a>
+    </nav>
+
+    <form action="{{ url_for('admin_logout') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit">Sign out</button>
+    </form>
+
+</aside>
   <main class="admin-main">
     {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack admin-flashes">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
     {% block admin_content %}{% endblock %}
