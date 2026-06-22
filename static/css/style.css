@@ -534,24 +534,74 @@ input,select,textarea,button{max-width:100%}
 }
 
 .disclaimer-card{
-    max-width:900px;
-    margin:auto;
-    background:#fff;
-    border:1px solid rgba(107,45,140,.12);
+    max-width:950px;
+    margin:0 auto;
+    background:#ffffff;
     border-radius:24px;
     padding:3rem;
+    border-left:6px solid #6b2d8c;
     box-shadow:0 10px 30px rgba(0,0,0,.05);
 }
 
 .disclaimer-card h2{
-    margin-bottom:1.5rem;
+    margin:1rem 0 2rem;
 }
 
 .disclaimer-card p{
+    margin-bottom:1.25rem;
     line-height:1.9;
-    margin-bottom:1rem;
+    color:var(--muted);
 }
 
+.disclaimer-footer{
+    margin-top:2rem;
+    padding-top:1.5rem;
+    border-top:1px solid rgba(107,45,140,.15);
+    text-align:center;
+}
+
+.disclaimer-footer strong{
+    display:block;
+    color:#6b2d8c;
+    font-size:1.1rem;
+    letter-spacing:.08em;
+    margin-bottom:.5rem;
+}
+
+.disclaimer-footer span{
+    display:block;
+    color:var(--muted);
+    font-size:.95rem;
+    letter-spacing:.04em;
+}
+
+@media(max-width:600px){
+
+    .disclaimer-section{
+        padding:2rem 0;
+    }
+
+    .disclaimer-card{
+        padding:1.75rem;
+        border-radius:18px;
+    }
+
+    .disclaimer-card h2{
+        font-size:2rem;
+    }
+
+    .disclaimer-card p{
+        line-height:1.8;
+    }
+
+    .disclaimer-footer strong{
+        font-size:1rem;
+    }
+
+    .disclaimer-footer span{
+        font-size:.85rem;
+    }
+}
 @media(prefers-reduced-motion:reduce){
   .support-strip{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
   .support-track{animation:none}
