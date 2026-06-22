@@ -15,7 +15,7 @@ from urllib.request import urlopen
 from dotenv import load_dotenv
 from flask import (
     Flask, abort, flash, g, jsonify, redirect, render_template, request,
-    session, url_for
+    session, url_for,send_file
 )
 from flask_login import (
     LoginManager, UserMixin, current_user, login_required, login_user,
@@ -515,6 +515,14 @@ def create_app(test_config=None):
         flash("Slot reopened.", "success")
         return redirect(url_for("admin_calendar"))
 
+    @app.get("/admin/db-backup")
+    @login_required
+    def db_backup():
+        return send_file(
+            app.config["DATABASE"],
+            as_attachment=True,
+            download_name="awaken.db"
+        )
     @app.route("/admin/change-password", methods=["GET", "POST"])
     @login_required
     def change_password():

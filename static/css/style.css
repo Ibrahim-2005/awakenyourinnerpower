@@ -529,6 +529,28 @@ input,select,textarea,button{max-width:100%}
   }
 }
 }
+.disclaimer-section{
+    padding:4rem 0;
+}
+
+.disclaimer-card{
+    max-width:900px;
+    margin:auto;
+    background:#fff;
+    border:1px solid rgba(107,45,140,.12);
+    border-radius:24px;
+    padding:3rem;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+}
+
+.disclaimer-card h2{
+    margin-bottom:1.5rem;
+}
+
+.disclaimer-card p{
+    line-height:1.9;
+    margin-bottom:1rem;
+}
 
 @media(prefers-reduced-motion:reduce){
   .support-strip{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
