@@ -607,3 +607,26 @@ input,select,textarea,button{max-width:100%}
   .support-track{animation:none}
   .support-group[aria-hidden="true"]{display:none}
 }
+
+.package-description{
+margin:1.25rem 0;
+line-height:1.8;
+}
+
+.package-price{
+margin:1.5rem 0 2rem;
+font-size:2rem;
+font-weight:700;
+color:#e0b565;
+}
+
+.package-price span{
+display:block;
+margin-top:.35rem;
+font-size:.85rem;
+font-weight:600;
+letter-spacing:.08em;
+text-transform:uppercase;
+color:#e0b565;
+opacity:.85;
+}

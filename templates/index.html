@@ -57,7 +57,7 @@
       <div class="about-card reveal">
         <div class="mini-lotus" aria-hidden="true"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""></div>
         <p class="eyebrow"><i></i> About your guide</p>
-        <h3>Practical guidance, soulful transformation.</h3>
+        <h3>Lakshmi Priya</h3>
         <p>I am a Life Coach and Spiritual Guide. My approach brings together self-awareness, positive thinking, subconscious mind transformation, meditation, emotional healing, and personal empowerment.</p>
         <a class="text-link gold-text" href="#services">Discover how I can support you →</a>
       </div>
@@ -137,8 +137,15 @@
       <h2>Choose the support that fits your season.</h2>
     </div>
     <div class="package-grid">
-      <article class="package-card reveal"><p class="card-label">Clarity</p><h3>Single Session</h3><strong>60 <small>minutes</small></strong><p>Perfect for gaining clarity, compassionate guidance, and practical next steps.</p><ul><li>Personalized coaching</li><li>Guided relaxation</li><li>Action plan & affirmations</li></ul><a class="button outline" href="#book">Book one session</a></article>
-      <article class="package-card featured reveal"><p class="card-label">Deep transformation</p><h3>10-Session Program</h3><strong>10 <small>guided sessions</small></strong><p>For those committed to lasting positive change through ongoing support and practice.</p><ul><li>Deeper mindset shifts</li><li>Progressive practices</li><li>Accountability & support</li></ul><a class="button gold" href="#book">Begin your journey</a></article>
+      <article class="package-card reveal">
+    <p class="card-label">Clarity</p>
+    <h3>Single Session</h3> <strong>60 <small>minutes</small></strong> <p class="package-description"> Perfect for gaining clarity, compassionate guidance, and practical next steps tailored to your current challenges and goals. </p> <div class="package-price">₹499</div> <ul> <li>Personalized coaching</li> <li>Guided relaxation</li> <li>Action plan & affirmations</li> </ul> <a class="button outline" href="#book"> Book one session </a>
+</article>
+
+<article class="package-card featured reveal">
+    <p class="card-label">Deep transformation</p>
+    <h3>10-Session Program</h3> <strong>10 <small>guided sessions</small></strong> <p class="package-description"> For those committed to lasting positive change through ongoing support, deeper self-awareness, and consistent personal growth practices. </p> <div class="package-price"> ₹4,499 <span>One Free Session</span> </div> <ul> <li>Deeper mindset shifts</li> <li>Progressive practices</li> <li>Accountability & support</li> </ul> <a class="button gold" href="#book"> Begin your journey </a>
+</article>
     </div>
     <p class="package-note reveal">Real transformation happens through awareness, practice, and consistency.</p>
   </section>
@@ -149,7 +156,7 @@
       <h2>Your next chapter can begin with one conversation.</h2>
       <p>Choose a convenient date and time. Your slot will be held while payment is confirmed.</p>
       <div class="contact-pill"><span>WhatsApp or call</span><a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">{{ phone_number }}</a></div>
-      <div class="after-hours"><b>After 7:00 PM?</b><p>Special appointments are available by arrangement for ₹999. Please contact us directly.</p></div>
+      <div class="after-hours"><b>After 7:00 PM?</b><p>Special appointments are available for 7-8 pm by arrangement for ₹999. Please contact us directly.</p></div>
     </div>
     <form class="booking-form reveal" action="{{ url_for('book') }}" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -166,7 +173,7 @@
         <span>I agree to the <a href="{{ url_for('privacy') }}" target="_blank">privacy and booking policy</a>.</span>
       </label>
       <button class="button gold wide-button" type="submit">Request this session <span>→</span></button>
-      <p class="form-note">Your information is treated with care and confidentiality.</p>
+      <p class="form-note">No Cancellation, Reschedule can be done within 24 hours of payment</p>
     </form>
   </section>
 
@@ -271,6 +278,6 @@
   <div class="footer-brand"><img src="{{ url_for('static', filename='img/lotus-mark.png') }}" alt=""><span>Awaken Your Inner Power</span></div>
   <blockquote>“The power you seek is already within you. Awaken it, trust it, and allow it to guide your life.”</blockquote>
   <p class="disclaimer">Life coaching supports personal growth and is not a substitute for professional medical, psychological, legal, or financial advice. Results vary by individual circumstances, commitment, and actions.</p>
-  <div class="footer-bottom"><span>© {{ current_year }} Awaken Your Inner Power</span><a href="{{ url_for('admin_login') }}">Admin</a><a class="back-to-top" href="#page-top">Back to top ↑</a></div>
+  <div class="footer-bottom"><span>© {{ current_year }} Awaken Your Inner Power | Founded by Lakshmi Priya</span><a href="{{ url_for('admin_login') }}">Admin</a><a class="back-to-top" href="#page-top">Back to top ↑</a></div>
 </footer>
 {% endblock %}
