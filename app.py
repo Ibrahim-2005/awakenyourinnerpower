@@ -34,6 +34,7 @@ SLOTS = [
     "3:00 PM – 4:00 PM",
     "4:00 PM – 5:00 PM",
     "5:00 PM – 6:00 PM",
+    "7:00 PM – 8:00 PM (999/-)",
 ]
 PACKAGES = ["Single Session (60 min)", "10-Session Transformation Program"]
 STATUSES = ["pending", "confirmed", "completed", "cancelled"]
