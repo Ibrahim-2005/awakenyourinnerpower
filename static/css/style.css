@@ -12,9 +12,9 @@
     grid-template-columns:45% 65%;
 
     align-items:center;
-    gap:4rem;
+    gap:3rem;
 
-    padding:4rem 6.5rem;
+    padding:3rem 5rem;
     max-width:1400px;
     margin:auto;
     position:relative;
@@ -31,8 +31,8 @@
 }
 
 .coach-photo{
-    width:450px;
-    height:520px;
+    width:420px;
+    height:460px;
 
     object-fit:cover;
 
