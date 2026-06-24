@@ -210,21 +210,35 @@ def create_app(test_config=None):
     @rate_limit("availability", 60, 60)
     def availability():
         selected_date = request.args.get("date", "")
+
         try:
-            date.fromisoformat(selected_date)
+            chosen_date = date.fromisoformat(selected_date)
         except ValueError:
             return jsonify({"error": "Choose a valid date."}), 400
-        taken = {
-            row["slot"]
-            for row in get_db().execute(
-                """SELECT slot FROM bookings
-                   WHERE session_date = ? AND status IN ('pending', 'confirmed')
-                   UNION
-                   SELECT slot FROM blocked_slots WHERE session_date = ?""",
-                (selected_date, selected_date),
-            ).fetchall()
+
+        booked_slots = {
+            booking.slot
+            for booking in Booking.query.filter(
+                Booking.session_date == chosen_date,
+                Booking.status.in_(["pending", "confirmed"])
+            ).all()
         }
-        return jsonify({"available": [slot for slot in SLOTS if slot not in taken]})
+
+        blocked_slots = {
+            blocked.slot
+            for blocked in BlockedSlot.query.filter_by(
+                session_date=selected_date
+            ).all()
+        }
+
+        taken = booked_slots.union(blocked_slots)
+
+        return jsonify({
+            "available": [
+                slot for slot in SLOTS
+                if slot not in taken
+            ]
+        })
 
     @app.post("/book")
     @rate_limit("booking", 8, 3600)
@@ -262,43 +276,46 @@ def create_app(test_config=None):
             for error in errors:
                 flash(error, "error")
             return redirect(url_for("index", _anchor="book"))
-
-        db = get_db()
-        unavailable = db.execute(
-            """SELECT 1 FROM bookings
-               WHERE session_date = ? AND slot = ?
-               AND status IN ('pending', 'confirmed')
-               UNION SELECT 1 FROM blocked_slots
-               WHERE session_date = ? AND slot = ?""",
-            (form["session_date"], form["slot"], form["session_date"], form["slot"]),
-        ).fetchone()
+        
+        booking_exists = Booking.query.filter(Booking.session_date == chosen_date,Booking.slot == form["slot"],Booking.status.in_(["pending", "confirmed"])).first()
+        blocked_exists = BlockedSlot.query.filter_by(session_date=form["session_date"],slot=form["slot"]).first()
+        unavailable = booking_exists or blocked_exists
+        
         if unavailable:
             flash("That time was just reserved. Please choose another slot.", "error")
             return redirect(url_for("index", _anchor="book"))
 
         booking_token = secrets.token_urlsafe(24)
         try:
-            cursor = db.execute(
-                """INSERT INTO bookings
-                   (name, phone, email, package, session_date, slot, note, public_token)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (*form.values(), booking_token),
+            booking = Booking(
+                name=form["name"],
+                phone=form["phone"],
+                email=form["email"],
+                package=form["package"],
+                session_date=chosen_date,
+                slot=form["slot"],
+                note=form["note"],
+                public_token=booking_token,
             )
-            db.commit()
-        except sqlite3.IntegrityError:
+
+            db.session.add(booking)
+            db.session.commit()
+
+        except Exception as e:
+            print("Booking Error:", e)
+            db.session.rollback()
+
             flash("That slot is no longer available.", "error")
             return redirect(url_for("index", _anchor="book"))
 
-        booking_id = cursor.lastrowid
+        booking_id = booking.id
         send_admin_notification(app, booking_id, form)
         return redirect(url_for("payment", booking_token=booking_token))
 
     @app.get("/payment/<booking_token>")
     @rate_limit("payment", 60, 60)
     def payment(booking_token):
-        booking = get_db().execute(
-            "SELECT * FROM bookings WHERE public_token = ?", (booking_token,)
-        ).fetchone()
+        booking = Booking.query.filter_by(public_token=booking_token).first()
         if not booking:
             abort(404)
         return render_template("payment.html", booking=booking)
@@ -474,13 +491,11 @@ def create_app(test_config=None):
         payment_status = request.form.get("payment_status", "")
         if status not in STATUSES or payment_status not in ("unpaid", "paid"):
             abort(400)
-        db = get_db()
-        db.execute(
-            """UPDATE bookings SET status = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP
-               WHERE id = ?""",
-            (status, payment_status, booking_id),
-        )
-        db.commit()
+        booking = Booking.query.get_or_404(booking_id)
+        booking.status = status
+        booking.payment_status = payment_status
+
+        db.session.commit()
         flash("Booking updated.", "success")
         return redirect(request.referrer or url_for("admin_bookings"))
     
@@ -488,14 +503,12 @@ def create_app(test_config=None):
     @login_required
     @csrf_protect
     def delete_booking(booking_id):
-        db = get_db()
 
-        db.execute(
-            "DELETE FROM bookings WHERE id = ?",
-            (booking_id,)
-        )
+        booking = Booking.query.get_or_404(booking_id)
 
-        db.commit()
+        db.session.delete(booking)
+
+        db.session.commit()
 
         flash("Booking deleted successfully.", "success")
 
