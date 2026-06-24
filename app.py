@@ -328,12 +328,8 @@ def create_app(test_config=None):
             return redirect(url_for("index", _anchor="book"))
 
         booking_id = booking.id
-        send_admin_notification(app, booking_id, form)
-        try:
-            send_booking_email(app, form)
-        except Exception as e:
-            app.logger.exception(f"Email failes:{e}")
-        print("reached redirect",booking_token)
+        # send_admin_notification(app, booking_id, form)
+        # send_booking_email(app, form)
         return redirect(url_for("payment", booking_token=booking_token))
 
     @app.get("/payment/<booking_token>")
