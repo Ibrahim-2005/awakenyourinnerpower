@@ -684,62 +684,25 @@ def validate_production_config(app):
     if errors:
         raise RuntimeError("Unsafe production configuration: " + "; ".join(errors))
 def send_booking_email(app, form):
+    print("EMAIL START")
+
     try:
-        # Coach notification
         coach_msg = Message(
             subject="New Booking Received",
             sender=app.config["MAIL_USERNAME"],
             recipients=[app.config["MAIL_USERNAME"]],
         )
 
-        coach_msg.body = f"""
-New Booking Received
+        coach_msg.body = "Test Email"
 
-Name: {form['name']}
-Email: {form['email']}
-Phone: {form['phone']}
-Package: {form['package']}
-Date: {datetime.strptime(form['session_date'], "%Y-%m-%d").strftime("%d/%m/%Y")}
-Slot: {form['slot']}
-
-Notes:
-{form['note']}
-"""
+        print("BEFORE SEND")
 
         mail.send(coach_msg)
 
-        # Customer confirmation
-        customer_msg = Message(
-            subject="Booking Confirmation - Awaken Your Inner Power",
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[form["email"]],
-        )
-
-        customer_msg.body = f"""
-Hi {form['name']},
-
-Thank you for booking a session with Lakshmi Priya.
-
-Booking Details
----------------
-Package: {form['package']}
-Date: {datetime.strptime(form['session_date'], "%Y-%m-%d").strftime("%d/%m/%Y")}
-Time: {form['slot']}
-
-Your booking has been received successfully.
-
-Please complete the payment to confirm your session.
-
-Warm regards,
-Lakshmi Priya
-Awaken Your Inner Power
-"""
-
-        mail.send(customer_msg)
+        print("AFTER SEND")
 
     except Exception as e:
-        print("EMAIL ERROR:", e)
-
+        print("EMAIL ERROR:", repr(e))
 def configure_logging(app):
     if app.config.get("TESTING"):
         return
