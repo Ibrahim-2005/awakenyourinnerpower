@@ -23,7 +23,7 @@ from flask_login import (
 )
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from models import db, User, Booking, BlockedSlot, RateLimit
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -67,6 +67,8 @@ def create_app(test_config=None):
         BANK_IFSC=os.getenv("BANK_IFSC", ""),
         CALLMEBOT_PHONE=os.getenv("CALLMEBOT_PHONE", ""),
         CALLMEBOT_APIKEY=os.getenv("CALLMEBOT_APIKEY", ""),
+        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL"),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
     if test_config:
         app.config.update(test_config)
@@ -75,13 +77,14 @@ def create_app(test_config=None):
     if app.config["TRUST_PROXY"]:
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     configure_logging(app)
+    db.init_app(app)
 
     login_manager = LoginManager()
     login_manager.login_view = "admin_login"
     login_manager.login_message_category = "info"
     login_manager.init_app(app)
 
-    class User(UserMixin):
+    class LegacyUser(UserMixin):
         def __init__(self, row):
             self.id = str(row["id"])
             self.username = row["username"]
@@ -89,10 +92,7 @@ def create_app(test_config=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        row = get_db().execute(
-            "SELECT * FROM users WHERE id = ?", (user_id,)
-        ).fetchone()
-        return User(row) if row else None
+        return User.query.get(int(user_id))
 
     def csrf_protect(view):
         @wraps(view)
@@ -311,13 +311,10 @@ def create_app(test_config=None):
             submitted = request.form.get("csrf_token", "")
             if not submitted or not secrets.compare_digest(submitted, session.get("_csrf_token", "")):
                 abort(400)
-            row = get_db().execute(
-                "SELECT * FROM users WHERE username = ?",
-                (request.form.get("username", "").strip(),),
-            ).fetchone()
-            if row and check_password_hash(row["password_hash"], request.form.get("password", "")):
+            user = User.query.filter_by(username=request.form.get("username", "").strip()).first()
+            if user and check_password_hash(user.password_hash,request.form.get("password", "")):
                 session.clear()
-                login_user(User(row))
+                login_user(user)
                 session.permanent = True
                 session["_csrf_token"] = secrets.token_urlsafe(32)
                 return redirect(url_for("admin_dashboard"))
