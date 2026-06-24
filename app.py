@@ -3,7 +3,7 @@ import re
 import secrets
 import time
 import resend
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 import logging
@@ -36,6 +36,15 @@ SLOTS = [
     "5:00 PM – 6:00 PM",
     "7:00 PM – 8:00 PM (999/-)",
 ]
+SLOT_START_TIMES = {
+    "11:00 AM – 12:00 PM": time(11, 0),
+    "12:00 PM – 1:00 PM": time(12, 0),
+    "1:00 PM – 2:00 PM": time(13, 0),
+    "3:00 PM – 4:00 PM": time(15, 0),
+    "4:00 PM – 5:00 PM": time(16, 0),
+    "5:00 PM – 6:00 PM": time(17, 0),
+    "7:00 PM – 8:00 PM (999/-)": time(19, 0),
+}
 PACKAGES = ["Single Session (60 min)", "10-Session Transformation Program"]
 STATUSES = ["pending", "confirmed", "completed", "cancelled"]
 
@@ -210,7 +219,7 @@ def create_app(test_config=None):
 
     @app.get("/")
     def index():
-        min_date = (date.today() + timedelta(days=1)).isoformat()
+        min_date = date.today().isoformat()
         return render_template(
             "index.html", slots=SLOTS, packages=PACKAGES, min_date=min_date
         )
@@ -253,11 +262,22 @@ def create_app(test_config=None):
 
         taken = booked_slots.union(blocked_slots)
 
-        return jsonify({
-            "available": [
-                slot for slot in SLOTS
-                if slot not in taken
+        available_slots = [
+            slot for slot in SLOTS
+            if slot not in taken
+        ]
+
+        if chosen_date == date.today():
+            now_time = datetime.now().time()
+
+            available_slots = [
+                slot
+                for slot in available_slots
+                if SLOT_START_TIMES[slot] > now_time
             ]
+
+        return jsonify({
+            "available": available_slots
         })
 
     @app.post("/book")
@@ -285,7 +305,12 @@ def create_app(test_config=None):
             errors.append("Please choose a valid time slot.")
         try:
             chosen_date = date.fromisoformat(form["session_date"])
-            if chosen_date <= date.today():
+            if chosen_date == date.today():
+                now_time = datetime.now().time()
+
+                if SLOT_START_TIMES[form["slot"]] <= now_time:
+                    errors.append("This time slot has already passed.")
+            if chosen_date < date.today():
                 errors.append("Please choose a future date.")
         except ValueError:
             errors.append("Please choose a valid date.")
