@@ -269,7 +269,7 @@ def create_app(test_config=None):
         ]
 
         if chosen_date == date.today():
-            now_time = datetime.now(ZoneInfo("Asia/Kolkata").time)
+            now_time = datetime.now(ZoneInfo("Asia/Kolkata")).time()
             print("NOW:",now_time)
             print("AVAILABLE BEFORE:",available_slots)
             available_slots = [
