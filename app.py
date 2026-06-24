@@ -21,6 +21,7 @@ from flask_login import (
     LoginManager, UserMixin, current_user, login_required, login_user,
     logout_user
 )
+from sqlalchemy import or_
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import db, User, Booking, BlockedSlot, RateLimit
@@ -335,18 +336,20 @@ def create_app(test_config=None):
         db = get_db()
         today = date.today()
         week_end = today + timedelta(days=7)
-        pending_count = db.execute(
-            "SELECT COUNT(*) AS count FROM bookings WHERE status = 'pending'"
-        ).fetchone()["count"]
-        todays = db.execute(
-            "SELECT * FROM bookings WHERE session_date = ? AND status != 'cancelled' ORDER BY slot",
-            (today.isoformat(),),
-        ).fetchall()
-        upcoming = db.execute(
-            """SELECT * FROM bookings WHERE session_date BETWEEN ? AND ?
-               AND status != 'cancelled' ORDER BY session_date, slot""",
-            (today.isoformat(), week_end.isoformat()),
-        ).fetchall()
+        pending_count = Booking.query.filter_by(status="pending").count()
+        todays = (Booking.query.filter(Booking.session_date == today,Booking.status != "cancelled").order_by(Booking.slot).all())
+        upcoming = (
+    Booking.query
+    .filter(
+        Booking.session_date.between(today, week_end),
+        Booking.status != "cancelled"
+    )
+    .order_by(
+        Booking.session_date,
+        Booking.slot
+    )
+    .all()
+)
         return render_template(
             "admin/dashboard.html",
             pending_count=pending_count,
@@ -421,27 +424,46 @@ def create_app(test_config=None):
     @app.route("/admin/bookings", methods=["GET"])
     @login_required
     def admin_bookings():
-        clauses, values = [], []
+
         status = request.args.get("status", "")
         query = request.args.get("q", "").strip()
         selected_date = request.args.get("date", "")
+
+        bookings_query = Booking.query
+
         if status in STATUSES:
-            clauses.append("status = ?")
-            values.append(status)
+            bookings_query = bookings_query.filter(
+                Booking.status == status
+            )
+
         if selected_date:
-            clauses.append("session_date = ?")
-            values.append(selected_date)
+            bookings_query = bookings_query.filter(
+                Booking.session_date == selected_date
+            )
+
         if query:
-            clauses.append("(name LIKE ? OR phone LIKE ? OR email LIKE ?)")
             wildcard = f"%{query}%"
-            values.extend([wildcard, wildcard, wildcard])
-        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
-        rows = get_db().execute(
-            f"SELECT * FROM bookings {where} ORDER BY session_date DESC, slot", values
-        ).fetchall()
+
+            bookings_query = bookings_query.filter(
+                or_(
+                    Booking.name.ilike(wildcard),
+                    Booking.phone.ilike(wildcard),
+                    Booking.email.ilike(wildcard)
+                )
+            )
+
+        rows = bookings_query.order_by(
+            Booking.session_date.desc(),
+            Booking.slot
+        ).all()
+
         return render_template(
-            "admin/bookings.html", bookings=rows, statuses=STATUSES,
-            selected_status=status, selected_date=selected_date, query=query
+            "admin/bookings.html",
+            bookings=rows,
+            statuses=STATUSES,
+            selected_status=status,
+            selected_date=selected_date,
+            query=query
         )
 
     @app.post("/admin/bookings/<int:booking_id>/status")
