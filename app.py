@@ -277,7 +277,7 @@ def create_app(test_config=None):
                 if SLOT_START_TIMES[slot] > now_time
             ]
 
-            return jsonify({
+        return jsonify({
                     "available": available_slots
                 })
 
