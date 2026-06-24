@@ -1,7 +1,6 @@
 import os
 import re
 import secrets
-import sqlite3
 import time
 from datetime import date, datetime, timedelta
 from functools import wraps
@@ -46,7 +45,6 @@ def create_app(test_config=None):
     app_env = os.getenv("APP_ENV", "development").lower()
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY", "dev-change-this-secret"),
-        DATABASE=os.getenv("DATABASE_PATH", str(BASE_DIR / "awaken.db")),
         APP_ENV=app_env,
         IS_PRODUCTION=app_env == "production",
         SESSION_COOKIE_HTTPONLY=True,
@@ -174,12 +172,6 @@ def create_app(test_config=None):
             "contact_email": app.config["CONTACT_EMAIL"],
             "current_year": datetime.now().year,
         }
-
-    @app.teardown_appcontext
-    def close_db(_error=None):
-        db = g.pop("db", None)
-        if db is not None:
-            db.close()
 
     @app.before_request
     def maintain_booking_holds():
@@ -372,7 +364,6 @@ def create_app(test_config=None):
     @app.get("/admin")
     @login_required
     def admin_dashboard():
-        db = get_db()
         today = date.today()
         week_end = today + timedelta(days=7)
         pending_count = Booking.query.filter_by(status="pending").count()
@@ -595,14 +586,7 @@ def create_app(test_config=None):
 
         return redirect(url_for("admin_calendar"))
 
-    @app.get("/admin/db-backup")
-    @login_required
-    def db_backup():
-        return send_file(
-            app.config["DATABASE"],
-            as_attachment=True,
-            download_name="awaken.db"
-        )
+
     @app.route("/admin/change-password", methods=["GET", "POST"])
     @login_required
     def change_password():
@@ -629,87 +613,8 @@ def create_app(test_config=None):
         return render_template("admin/change_password.html")
 
     with app.app_context():
-        init_db(app)
+        db.create_all()
     return app
-
-
-def get_db():
-    if "db" not in g:
-        from flask import current_app
-        db_path = current_app.config["DATABASE"]
-        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-        g.db = sqlite3.connect(db_path, timeout=10)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON")
-        g.db.execute("PRAGMA journal_mode = WAL")
-        g.db.execute("PRAGMA busy_timeout = 10000")
-    return g.db
-
-
-def init_db(app):
-    db = get_db()
-    db.executescript(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-        CREATE TABLE IF NOT EXISTS bookings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            email TEXT,
-            package TEXT NOT NULL,
-            session_date DATE NOT NULL,
-            slot TEXT NOT NULL,
-            note TEXT,
-            public_token TEXT,
-            status TEXT NOT NULL DEFAULT 'pending'
-                CHECK(status IN ('pending','confirmed','completed','cancelled')),
-            payment_status TEXT NOT NULL DEFAULT 'unpaid'
-                CHECK(payment_status IN ('unpaid','paid')),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        CREATE UNIQUE INDEX IF NOT EXISTS active_slot_unique
-        ON bookings(session_date, slot)
-        WHERE status IN ('pending', 'confirmed');
-        CREATE TABLE IF NOT EXISTS blocked_slots (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_date TEXT NOT NULL,
-            slot TEXT NOT NULL,
-            note TEXT,
-            UNIQUE(session_date, slot)
-        );
-        CREATE TABLE IF NOT EXISTS rate_limits (
-            key TEXT PRIMARY KEY,
-            window_start INTEGER NOT NULL,
-            count INTEGER NOT NULL
-        );
-        """
-    )
-    columns = {row["name"] for row in db.execute("PRAGMA table_info(bookings)").fetchall()}
-    if "public_token" not in columns:
-        db.execute("ALTER TABLE bookings ADD COLUMN public_token TEXT")
-    for row in db.execute("SELECT id FROM bookings WHERE public_token IS NULL").fetchall():
-        db.execute(
-            "UPDATE bookings SET public_token = ? WHERE id = ?",
-            (secrets.token_urlsafe(24), row["id"]),
-        )
-    db.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS booking_public_token_unique ON bookings(public_token)"
-    )
-    username = app.config.get("ADMIN_USERNAME") or os.getenv("ADMIN_USERNAME", "admin")
-    existing = db.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone()
-    if not existing:
-        password = app.config.get("ADMIN_PASSWORD") or os.getenv("ADMIN_PASSWORD", "change-me-now")
-        db.execute(
-            "INSERT OR IGNORE INTO users (username, password_hash) VALUES (?, ?)",
-            (username, generate_password_hash(password)),
-        )
-    db.commit()
 
 
 def expire_pending_bookings(app):
