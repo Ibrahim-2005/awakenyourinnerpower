@@ -1,8 +1,8 @@
 import os
 import re
 import secrets
-from flask_mail import Mail, Message
 import time
+import resend
 from datetime import date, datetime, timedelta
 from functools import wraps
 from logging.handlers import RotatingFileHandler
@@ -38,7 +38,6 @@ SLOTS = [
 ]
 PACKAGES = ["Single Session (60 min)", "10-Session Transformation Program"]
 STATUSES = ["pending", "confirmed", "completed", "cancelled"]
-mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -84,7 +83,6 @@ def create_app(test_config=None):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     configure_logging(app)
     db.init_app(app)
-    mail.init_app(app)
 
     login_manager = LoginManager()
     login_manager.login_view = "admin_login"
@@ -330,7 +328,7 @@ def create_app(test_config=None):
         booking_id = booking.id
         # send_admin_notification(app, booking_id, form)
         try:
-            send_booking_email(app, form)
+            send_booking_email(form)
         except Exception as e:
             print("EMAIL ERROR:", repr(e))
         return redirect(url_for("payment", booking_token=booking_token))
@@ -683,16 +681,28 @@ def validate_production_config(app):
     if errors:
         raise RuntimeError("Unsafe production configuration: " + "; ".join(errors))
     
-def send_booking_email(app, form):
-    coach_msg = Message(
-        subject="New Booking Received",
-        sender=app.config["MAIL_USERNAME"],
-        recipients=[app.config["MAIL_USERNAME"]],
-    )
+resend.api_key = os.getenv("RESEND_API_KEY")
 
-    coach_msg.body = "Test Email"
 
-    mail.send(coach_msg)
+def send_booking_email(form):
+    resend.Emails.send({
+        "from": "onboarding@resend.dev",
+        "to": [os.getenv("CONTACT_EMAIL")],
+        "subject": "New Booking Received",
+        "html": f"""
+        <h2>New Booking Received</h2>
+
+        <p><strong>Name:</strong> {form['name']}</p>
+        <p><strong>Email:</strong> {form['email']}</p>
+        <p><strong>Phone:</strong> {form['phone']}</p>
+        <p><strong>Package:</strong> {form['package']}</p>
+        <p><strong>Date:</strong> {datetime.strptime(form['session_date'], "%Y-%m-%d").strftime("%d/%m/%Y")}</p>
+        <p><strong>Slot:</strong> {form['slot']}</p>
+
+        <p><strong>Notes:</strong></p>
+        <p>{form['note']}</p>
+        """
+    })
 
 def configure_logging(app):
     if app.config.get("TESTING"):
