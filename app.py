@@ -550,10 +550,19 @@ def create_app(test_config=None):
         if slot not in SLOTS:
             abort(400)
         try:
-            date.fromisoformat(session_date)
+            selected_date = date.fromisoformat(session_date)
         except ValueError:
             abort(400)
+        existing_booking = Booking.query.filter(Booking.session_date == selected_date,Booking.slot == slot,Booking.status.in_(["pending", "confirmed"])).first()
 
+        if existing_booking:
+            flash(f"This slot is already booked by {existing_booking.name}.","error")
+            return redirect(url_for("admin_calendar"))
+        existing_block = BlockedSlot.query.filter_by(session_date=session_date,slot=slot).first()
+
+        if existing_block:
+            flash("This slot is already blocked.", "error")
+            return redirect(url_for("admin_calendar"))
         try:
             block = BlockedSlot(
                 session_date=session_date,
@@ -566,9 +575,10 @@ def create_app(test_config=None):
 
             flash("Slot blocked.", "success")
 
-        except Exception:
+        except Exception as e:
             db.session.rollback()
-            flash("That slot is already blocked.", "error")
+            print("Block Error:", e)
+            flash("Unable to block slot.", "error")
         return redirect(url_for("admin_calendar"))
 
     @app.post("/admin/blocks/<int:block_id>/delete")
