@@ -25,7 +25,7 @@ from sqlalchemy import or_
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import db, User, Booking, BlockedSlot, RateLimit
-
+from zoneinfo import ZoneInfo
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 SLOTS = [
@@ -269,7 +269,7 @@ def create_app(test_config=None):
         ]
 
         if chosen_date == date.today():
-            now_time = datetime.now().time()
+            now_time = datetime.now(ZoneInfo("Asia/Kolkata").time)
             print("NOW:",now_time)
             print("AVAILABLE BEFORE:",available_slots)
             available_slots = [
@@ -309,7 +309,7 @@ def create_app(test_config=None):
         try:
             chosen_date = date.fromisoformat(form["session_date"])
             if chosen_date == date.today():
-                now_time = datetime.now().time()
+                now_time = datetime.now(ZoneInfo("Asia/Kolkata")).time()
 
                 if SLOT_START_TIMES[form["slot"]] <= now_time:
                     errors.append("This time slot has already passed.")
