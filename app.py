@@ -329,7 +329,10 @@ def create_app(test_config=None):
 
         booking_id = booking.id
         # send_admin_notification(app, booking_id, form)
-        # send_booking_email(app, form)
+        try:
+            send_booking_email(app, form)
+        except Exception as e:
+            print("EMAIL ERROR:", repr(e))
         return redirect(url_for("payment", booking_token=booking_token))
 
     @app.get("/payment/<booking_token>")
@@ -679,26 +682,18 @@ def validate_production_config(app):
         errors.append("replace all contact and payment placeholder values")
     if errors:
         raise RuntimeError("Unsafe production configuration: " + "; ".join(errors))
+    
 def send_booking_email(app, form):
-    print("EMAIL START")
+    coach_msg = Message(
+        subject="New Booking Received",
+        sender=app.config["MAIL_USERNAME"],
+        recipients=[app.config["MAIL_USERNAME"]],
+    )
 
-    try:
-        coach_msg = Message(
-            subject="New Booking Received",
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[app.config["MAIL_USERNAME"]],
-        )
+    coach_msg.body = "Test Email"
 
-        coach_msg.body = "Test Email"
+    mail.send(coach_msg)
 
-        print("BEFORE SEND")
-
-        mail.send(coach_msg)
-
-        print("AFTER SEND")
-
-    except Exception as e:
-        print("EMAIL ERROR:", repr(e))
 def configure_logging(app):
     if app.config.get("TESTING"):
         return
