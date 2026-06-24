@@ -270,12 +270,14 @@ def create_app(test_config=None):
 
         if chosen_date == date.today():
             now_time = datetime.now().time()
-
+            print("NOW:",now_time)
+            print("AVAILABLE BEFORE:",available_slots)
             available_slots = [
                 slot
                 for slot in available_slots
                 if SLOT_START_TIMES[slot] > now_time
             ]
+            print("AVAILABLE AFTER:", available_slots)
 
         return jsonify({
             "available": available_slots
