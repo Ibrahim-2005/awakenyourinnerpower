@@ -3,7 +3,8 @@ import re
 import secrets
 import time
 import resend
-from datetime import date, datetime, timedelta, time
+from datetime import date, datetime, timedelta
+from datetime import time as dt_time
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 import logging
@@ -37,13 +38,13 @@ SLOTS = [
     "7:00 PM – 8:00 PM (999/-)",
 ]
 SLOT_START_TIMES = {
-    "11:00 AM – 12:00 PM": time(11, 0),
-    "12:00 PM – 1:00 PM": time(12, 0),
-    "1:00 PM – 2:00 PM": time(13, 0),
-    "3:00 PM – 4:00 PM": time(15, 0),
-    "4:00 PM – 5:00 PM": time(16, 0),
-    "5:00 PM – 6:00 PM": time(17, 0),
-    "7:00 PM – 8:00 PM (999/-)": time(19, 0),
+    "11:00 AM – 12:00 PM": dt_time(11, 0),
+    "12:00 PM – 1:00 PM": dt_time(12, 0),
+    "1:00 PM – 2:00 PM": dt_time(13, 0),
+    "3:00 PM – 4:00 PM": dt_time(15, 0),
+    "4:00 PM – 5:00 PM": dt_time(16, 0),
+    "5:00 PM – 6:00 PM": dt_time(17, 0),
+    "7:00 PM – 8:00 PM (999/-)": dt_time(19, 0),
 }
 PACKAGES = ["Single Session (60 min)", "10-Session Transformation Program"]
 STATUSES = ["pending", "confirmed", "completed", "cancelled"]
