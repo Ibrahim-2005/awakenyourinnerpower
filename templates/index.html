@@ -190,7 +190,7 @@
       <div class="honeypot" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
       <div class="field wide"><label for="name">Your name *</label><input id="name" name="name" required autocomplete="name" placeholder="How should I address you?"></div>
       <div class="field"><label for="phone">Phone / WhatsApp *</label><input id="phone" name="phone" required autocomplete="tel" placeholder="+91"></div>
-      <div class="field"><label for="email">Email <small>optional</small></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="email">Email <small>optional</small></label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com"></div>
       <div class="field wide"><label for="package">Choose your package *</label><select id="package" name="package" required><option value="">Select one</option>{% for package in packages %}<option>{{ package }}</option>{% endfor %}</select></div>
       <div class="field"><label for="session_date">Preferred date *</label><input id="session_date" name="session_date" type="date" min="{{ min_date }}" required></div>
       <div class="field"><label for="slot">Available time *</label><select id="slot" name="slot" required disabled><option value="">Choose a date first</option></select></div>

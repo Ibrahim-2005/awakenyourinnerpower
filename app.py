@@ -1,6 +1,7 @@
 import os
 import re
 import secrets
+from flask_mail import Mail, Message
 import time
 from datetime import date, datetime, timedelta
 from functools import wraps
@@ -10,7 +11,6 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
-
 from dotenv import load_dotenv
 from flask import (
     Flask, abort, flash, g, jsonify, redirect, render_template, request,
@@ -38,7 +38,7 @@ SLOTS = [
 ]
 PACKAGES = ["Single Session (60 min)", "10-Session Transformation Program"]
 STATUSES = ["pending", "confirmed", "completed", "cancelled"]
-
+mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -69,6 +69,13 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+    app.config.update(
+        MAIL_SERVER="smtp.gmail.com",
+        MAIL_PORT=587,
+        MAIL_USE_TLS=True,
+        MAIL_USERNAME=os.getenv("SMTP_EMAIL"),
+        MAIL_PASSWORD=os.getenv("SMTP_PASSWORD"),
+    )
     if test_config:
         app.config.update(test_config)
 
@@ -77,6 +84,7 @@ def create_app(test_config=None):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     configure_logging(app)
     db.init_app(app)
+    mail.init_app(app)
 
     login_manager = LoginManager()
     login_manager.login_view = "admin_login"
@@ -267,10 +275,7 @@ def create_app(test_config=None):
             errors.append("Please enter your name.")
         if not re.fullmatch(r"[0-9+()\-\s]{7,24}", form["phone"]):
             errors.append("Please enter a valid phone number.")
-        if form["email"] and (
-            len(form["email"]) > 254
-            or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", form["email"])
-        ):
+        if (len(form["email"]) > 254 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", form["email"])):
             errors.append("Please enter a valid email address.")
         if len(form["note"]) > 1500:
             errors.append("Please shorten your note.")
@@ -324,6 +329,7 @@ def create_app(test_config=None):
 
         booking_id = booking.id
         send_admin_notification(app, booking_id, form)
+        send_booking_email(app, form)
         return redirect(url_for("payment", booking_token=booking_token))
 
     @app.get("/payment/<booking_token>")
@@ -673,7 +679,62 @@ def validate_production_config(app):
         errors.append("replace all contact and payment placeholder values")
     if errors:
         raise RuntimeError("Unsafe production configuration: " + "; ".join(errors))
+def send_booking_email(app, form):
+    try:
+        # Coach notification
+        coach_msg = Message(
+            subject="New Booking Received",
+            sender=app.config["MAIL_USERNAME"],
+            recipients=[app.config["MAIL_USERNAME"]],
+        )
 
+        coach_msg.body = f"""
+New Booking Received
+
+Name: {form['name']}
+Email: {form['email']}
+Phone: {form['phone']}
+Package: {form['package']}
+Date: {datetime.strptime(form['session_date'], "%Y-%m-%d").strftime("%d/%m/%Y")}
+Slot: {form['slot']}
+
+Notes:
+{form['note']}
+"""
+
+        mail.send(coach_msg)
+
+        # Customer confirmation
+        customer_msg = Message(
+            subject="Booking Confirmation - Awaken Your Inner Power",
+            sender=app.config["MAIL_USERNAME"],
+            recipients=[form["email"]],
+        )
+
+        customer_msg.body = f"""
+Hi {form['name']},
+
+Thank you for booking a session with Lakshmi Priya.
+
+Booking Details
+---------------
+Package: {form['package']}
+Date: {datetime.strptime(form['session_date'], "%Y-%m-%d").strftime("%d/%m/%Y")}
+Time: {form['slot']}
+
+Your booking has been received successfully.
+
+Please complete the payment to confirm your session.
+
+Warm regards,
+Lakshmi Priya
+Awaken Your Inner Power
+"""
+
+        mail.send(customer_msg)
+
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
 def configure_logging(app):
     if app.config.get("TESTING"):
