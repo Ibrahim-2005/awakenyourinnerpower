@@ -528,23 +528,19 @@ def create_app(test_config=None):
             submitted = request.form.get("csrf_token", "")
             if not submitted or not secrets.compare_digest(submitted, session.get("_csrf_token", "")):
                 abort(400)
-            db = get_db()
-            row = db.execute("SELECT * FROM users WHERE id = ?", (current_user.id,)).fetchone()
+            user = User.query.get(int(current_user.id))
             current = request.form.get("current_password", "")
             new = request.form.get("new_password", "")
             confirm = request.form.get("confirm_password", "")
-            if not check_password_hash(row["password_hash"], current):
+            if not check_password_hash(user.password_hash, current):
                 flash("Current password is incorrect.", "error")
             elif len(new) < 12:
                 flash("New password must be at least 12 characters.", "error")
             elif new != confirm:
                 flash("New passwords do not match.", "error")
             else:
-                db.execute(
-                    "UPDATE users SET password_hash = ? WHERE id = ?",
-                    (generate_password_hash(new), current_user.id),
-                )
-                db.commit()
+                user.password_hash = generate_password_hash(new)
+                db.session.commit()
                 session["_csrf_token"] = secrets.token_urlsafe(32)
                 flash("Password changed.", "success")
                 return redirect(url_for("admin_dashboard"))
