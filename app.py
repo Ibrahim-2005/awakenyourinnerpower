@@ -691,18 +691,30 @@ def init_db(app):
 
 
 def expire_pending_bookings(app):
-    cutoff = datetime.utcnow() - timedelta(minutes=app.config["PENDING_HOLD_MINUTES"])
-    db = get_db()
-    db.execute(
-        """UPDATE bookings SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
-           WHERE status = 'pending' AND payment_status = 'unpaid' AND created_at < ?""",
-        (cutoff.strftime("%Y-%m-%d %H:%M:%S"),),
+
+    cutoff = datetime.utcnow() - timedelta(
+        minutes=app.config["PENDING_HOLD_MINUTES"]
     )
-    db.execute(
-        "DELETE FROM rate_limits WHERE window_start < ?",
-        (int(time.time()) - 86400,),
+
+    Booking.query.filter(
+        Booking.status == "pending",
+        Booking.payment_status == "unpaid",
+        Booking.created_at < cutoff
+    ).update(
+        {
+            "status": "cancelled",
+            "updated_at": datetime.utcnow()
+        },
+        synchronize_session=False
     )
-    db.commit()
+
+    RateLimit.query.filter(
+        RateLimit.window_start < (int(time.time()) - 86400)
+    ).delete(
+        synchronize_session=False
+    )
+
+    db.session.commit()
 
 
 def validate_production_config(app):
