@@ -103,37 +103,60 @@ def create_app(test_config=None):
                 abort(400, "Invalid CSRF token")
             return view(*args, **kwargs)
         return wrapped
-
+    
     def rate_limit(name, limit, window_seconds, methods=None):
         def decorator(view):
             @wraps(view)
             def wrapped(*args, **kwargs):
                 if methods and request.method not in methods:
                     return view(*args, **kwargs)
-                identity = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
+
+                identity = request.headers.get(
+                    "X-Forwarded-For",
+                    request.remote_addr or "unknown"
+                )
+
                 identity = identity.split(",")[0].strip()
                 key = f"{name}:{identity}"
                 now = int(time.time())
                 window = now - (now % window_seconds)
-                db = get_db()
-                row = db.execute(
-                    "SELECT window_start, count FROM rate_limits WHERE key = ?", (key,)
-                ).fetchone()
-                if row and row["window_start"] == window and row["count"] >= limit:
+
+                row = RateLimit.query.filter_by(key=key).first()
+
+                if (
+                    row
+                    and row.window_start == window
+                    and row.count >= limit
+                ):
                     retry_after = window_seconds - (now - window)
-                    response = jsonify({"error": "Too many requests. Please try again shortly."})
+
+                    response = jsonify({
+                        "error": "Too many requests. Please try again shortly."
+                    })
+
                     response.status_code = 429
                     response.headers["Retry-After"] = str(retry_after)
                     return response
-                if row and row["window_start"] == window:
-                    db.execute("UPDATE rate_limits SET count = count + 1 WHERE key = ?", (key,))
+
+                if row and row.window_start == window:
+
+                    row.count += 1
+
                 else:
-                    db.execute(
-                        """INSERT INTO rate_limits (key, window_start, count) VALUES (?, ?, 1)
-                           ON CONFLICT(key) DO UPDATE SET window_start = excluded.window_start, count = 1""",
-                        (key, window),
-                    )
-                db.commit()
+
+                    if row:
+                        row.window_start = window
+                        row.count = 1
+                    else:
+                        row = RateLimit(
+                            key=key,
+                            window_start=window,
+                            count=1
+                        )
+                        db.session.add(row)
+
+                db.session.commit()
+
                 return view(*args, **kwargs)
             return wrapped
         return decorator
@@ -201,11 +224,10 @@ def create_app(test_config=None):
     @app.get("/healthz")
     def healthz():
         try:
-            get_db().execute("SELECT 1").fetchone()
-        except sqlite3.Error:
+            db.session.execute(db.text("SELECT 1"))
+            return jsonify({"status": "ok"})
+        except Exception:
             return jsonify({"status": "unhealthy"}), 503
-        return jsonify({"status": "ok"})
-
     @app.get("/api/availability")
     @rate_limit("availability", 60, 60)
     def availability():
