@@ -263,7 +263,7 @@ def create_app(test_config=None):
         })
 
     @app.post("/book")
-    @rate_limit("booking", 8, 3600)
+    @rate_limit("booking", 100, 3600)
     @csrf_protect
     def book():
         form = {key: request.form.get(key, "").strip() for key in
