@@ -377,23 +377,20 @@ def create_app(test_config=None):
     @app.get("/admin/calendar")
     @login_required
     def admin_calendar():
-        db = get_db()
 
-        pending = db.execute(
-            "SELECT COUNT(*) FROM bookings WHERE status='pending'"
-        ).fetchone()[0]
+        pending = Booking.query.filter_by(
+            status="pending"
+        ).count()
 
-        confirmed = db.execute(
-            "SELECT COUNT(*) FROM bookings WHERE status='confirmed'"
-        ).fetchone()[0]
+        confirmed = Booking.query.filter_by(
+            status="confirmed"
+        ).count()
 
-        completed = db.execute(
-            "SELECT COUNT(*) FROM bookings WHERE status='completed'"
-        ).fetchone()[0]
+        completed = Booking.query.filter_by(
+            status="completed"
+        ).count()
 
-        blocked = db.execute(
-            "SELECT COUNT(*) FROM blocked_slots"
-        ).fetchone()[0]
+        blocked = BlockedSlot.query.count()
 
         return render_template(
             "admin/calendar.html",
@@ -406,38 +403,55 @@ def create_app(test_config=None):
     @app.get("/admin/events")
     @login_required
     def admin_events():
-        db = get_db()
-        bookings = db.execute("SELECT * FROM bookings").fetchall()
-        blocks = db.execute("SELECT * FROM blocked_slots").fetchall()
+
+        bookings = Booking.query.all()
+        blocks = BlockedSlot.query.all()
+
         colors = {
             "pending": "#e8b96a",
             "confirmed": "#6b2d8c",
             "completed": "#3f8a6f",
             "cancelled": "#8a7d88",
         }
-        events = [{
-            "id": f"booking-{row['id']}",
-            "title": f"{row['slot']} · {row['name']}",
-            "start": row["session_date"],
-            "allDay": True,
-            "backgroundColor": colors[row["status"]],
-            "borderColor": colors[row["status"]],
-            "extendedProps": {
-                "kind": "booking", "bookingId": row["id"], "status": row["status"],
-                "phone": row["phone"], "package": row["package"], "slot": row["slot"],
-            },
-        } for row in bookings]
-        events += [{
-            "id": f"block-{row['id']}",
-            "title": f"{row['slot']} · Blocked",
-            "start": row["session_date"],
-            "allDay": True,
-            "backgroundColor": "#c8419a",
-            "borderColor": "#c8419a",
-            "extendedProps": {"kind": "block", "blockId": row["id"], "slot": row["slot"]},
-        } for row in blocks]
-        return jsonify(events)
 
+        events = [
+            {
+                "id": f"booking-{row.id}",
+                "title": f"{row.slot} · {row.name}",
+                "start": str(row.session_date),
+                "allDay": True,
+                "backgroundColor": colors.get(row.status, "#8a7d88"),
+                "borderColor": colors.get(row.status, "#8a7d88"),
+                "extendedProps": {
+                    "kind": "booking",
+                    "bookingId": row.id,
+                    "status": row.status,
+                    "phone": row.phone,
+                    "package": row.package,
+                    "slot": row.slot,
+                },
+            }
+            for row in bookings
+        ]
+
+        events += [
+            {
+                "id": f"block-{row.id}",
+                "title": f"{row.slot} · Blocked",
+                "start": row.session_date,
+                "allDay": True,
+                "backgroundColor": "#c8419a",
+                "borderColor": "#c8419a",
+                "extendedProps": {
+                    "kind": "block",
+                    "blockId": row.id,
+                    "slot": row.slot,
+                },
+            }
+            for row in blocks
+        ]
+
+        return jsonify(events)
     @app.route("/admin/bookings", methods=["GET"])
     @login_required
     def admin_bookings():
@@ -526,15 +540,21 @@ def create_app(test_config=None):
             date.fromisoformat(session_date)
         except ValueError:
             abort(400)
-        db = get_db()
+
         try:
-            db.execute(
-                "INSERT INTO blocked_slots (session_date, slot, note) VALUES (?, ?, ?)",
-                (session_date, slot, request.form.get("note", "").strip()),
+            block = BlockedSlot(
+                session_date=session_date,
+                slot=slot,
+                note=request.form.get("note", "").strip()
             )
-            db.commit()
+
+            db.session.add(block)
+            db.session.commit()
+
             flash("Slot blocked.", "success")
-        except sqlite3.IntegrityError:
+
+        except Exception:
+            db.session.rollback()
             flash("That slot is already blocked.", "error")
         return redirect(url_for("admin_calendar"))
 
@@ -542,10 +562,15 @@ def create_app(test_config=None):
     @login_required
     @csrf_protect
     def delete_block(block_id):
-        db = get_db()
-        db.execute("DELETE FROM blocked_slots WHERE id = ?", (block_id,))
-        db.commit()
+
+        block = BlockedSlot.query.get_or_404(block_id)
+
+        db.session.delete(block)
+
+        db.session.commit()
+
         flash("Slot reopened.", "success")
+
         return redirect(url_for("admin_calendar"))
 
     @app.get("/admin/db-backup")
