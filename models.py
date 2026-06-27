@@ -33,7 +33,7 @@ class Booking(db.Model):
     slot = db.Column(db.Text, nullable=False)
 
     note = db.Column(db.Text)
-
+    booking_reference = db.Column(db.String(20), unique=True, nullable=True)
     public_token = db.Column(
         db.String(255),
         unique=True

@@ -342,6 +342,8 @@ def create_app(test_config=None):
             )
 
             db.session.add(booking)
+            db.session.flush()   # Gets the ID from PostgreSQL without committing
+            booking.booking_reference = f"AYP-{booking.id:04d}"
             db.session.commit()
 
         except Exception as e:
@@ -351,10 +353,9 @@ def create_app(test_config=None):
             flash("That slot is no longer available.", "error")
             return redirect(url_for("index", _anchor="book"))
 
-        booking_id = booking.id
         # send_admin_notification(app, booking_id, form)
         try:
-            send_booking_email(form)
+            send_booking_email(form,booking.booking_reference)
         except Exception as e:
             print("EMAIL ERROR:", repr(e))
         return redirect(url_for("payment", booking_token=booking_token))
@@ -710,14 +711,14 @@ def validate_production_config(app):
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 
-def send_booking_email(form):
+def send_booking_email(form, booking_reference):
     resend.Emails.send({
         "from": "onboarding@resend.dev",
         "to": [os.getenv("CONTACT_EMAIL")],
         "subject": "New Booking Received",
         "html": f"""
         <h2>New Booking Received</h2>
-
+        <p><strong>Booking Reference:</strong> {booking_reference}</p>
         <p><strong>Name:</strong> {form['name']}</p>
         <p><strong>Email:</strong> {form['email']}</p>
         <p><strong>Phone:</strong> {form['phone']}</p>
